@@ -19,21 +19,26 @@ func main() {
 	b := make([]byte, 8)
 	var currentLine string
 	for {
-
 		val, err := f.Read(b)
 		if err == io.EOF {
+			if currentLine != "" {
+				fmt.Printf("read: %s\n", currentLine)
+			}
 			break
 		}
 
-		currentPart := b[:val]
-		parts := strings.Split(string(currentPart), "\n")
-		// fmt.Println(parts)
+		parts := strings.Split(string(b[:val]), "\n")
+		if len(parts) > 1 {
+			fmt.Printf("read: %s%s\n", currentLine, parts[0])
 
-		for i := 0; i < len(parts)-1; i++ {
-			currentLine += parts[i]
+			for i := 1; i < len(parts)-1; i++ {
+				fmt.Printf("read: %s\n", parts[i])
+			}
+
+			currentLine = parts[len(parts)-1]
+		} else {
+			currentLine += parts[0]
 		}
-		fmt.Printf("read: %s\n", currentLine)
-		currentLine = "" + parts[len(parts)-1]
 	}
 
 }
