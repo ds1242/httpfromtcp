@@ -24,8 +24,8 @@ func main() {
 	var currentLine string
 	for {
 
-		b := make([]byte, 8, 8)
-		val, err := f.Read(b)
+		buffer := make([]byte, 8, 8)
+		val, err := f.Read(buffer)
 		if err == io.EOF {
 			if currentLine != "" {
 				fmt.Printf("read: %s\n", currentLine)
@@ -33,7 +33,7 @@ func main() {
 			break
 		}
 
-		parts := strings.Split(string(b[:val]), "\n")
+		parts := strings.Split(string(buffer[:val]), "\n")
 		if len(parts) > 1 {
 			fmt.Printf("read: %s%s\n", currentLine, parts[0])
 
