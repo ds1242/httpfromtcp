@@ -8,17 +8,23 @@ import (
 	"strings"
 )
 
+const filePath = "messages.txt"
+
 func main() {
-	f, err := os.Open("messages.txt")
+	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not open %s: %s\n", filePath, err)
 	}
 
 	defer f.Close()
 
-	b := make([]byte, 8)
+	fmt.Printf("Reading data from %s\n", filePath)
+	fmt.Println("===============================")
+
 	var currentLine string
 	for {
+
+		b := make([]byte, 8, 8)
 		val, err := f.Read(b)
 		if err == io.EOF {
 			if currentLine != "" {
