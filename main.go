@@ -22,6 +22,14 @@ func main() {
 	fmt.Printf("Reading data from %s\n", filePath)
 	fmt.Println("===============================")
 
+	ch := getLinesChannel(file)
+	for line := range ch {
+		fmt.Printf("read: %s\n", line)
+	}
+
+}
+
+func getLinesChannel(f io.ReadCloser) <-chan string {
 	currentLine := ""
 	for {
 
@@ -42,10 +50,10 @@ func main() {
 		str := string(buffer[:n])
 		parts := strings.Split(str, "\n")
 		for i := 0; i < len(parts)-1; i++ {
-			fmt.Printf("read: %s%s\n", currentLine, parts[i])
+			fullLine := currentLine + parts[i]
 			currentLine = ""
+			return fullLine
 		}
 		currentLine += parts[len(parts)-1]
 	}
-
 }
