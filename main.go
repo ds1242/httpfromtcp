@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -21,30 +22,30 @@ func main() {
 	fmt.Printf("Reading data from %s\n", filePath)
 	fmt.Println("===============================")
 
-	var currentLine string
+	currentLine := ""
 	for {
 
 		buffer := make([]byte, 8, 8)
-		val, err := f.Read(buffer)
-		if err == io.EOF {
+		n, err := f.Read(buffer)
+		if err != nil {
 			if currentLine != "" {
 				fmt.Printf("read: %s\n", currentLine)
+				currentLine = ""
 			}
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			fmt.Printf("error: %s\n", err.Error())
 			break
 		}
 
-		parts := strings.Split(string(buffer[:val]), "\n")
-		if len(parts) > 1 {
-			fmt.Printf("read: %s%s\n", currentLine, parts[0])
-
-			for i := 1; i < len(parts)-1; i++ {
-				fmt.Printf("read: %s\n", parts[i])
-			}
-
-			currentLine = parts[len(parts)-1]
-		} else {
-			currentLine += parts[0]
+		str := string(buffer[:n])
+		parts := strings.Split(str, "\n")
+		for i := 0; i < len(parts)-1; i++ {
+			fmt.Printf("read: %s%s\n", currentLine, parts[i])
+			currentLine = ""
 		}
+		currentLine += parts[len(parts)-1]
 	}
 
 }
