@@ -20,15 +20,15 @@ func main() {
 
 	defer listener.Close()
 
-	fmt.Printf("Listening on port : %s\n", listener.Addr())
+	fmt.Printf("Listening for TCP traffic on : %s\n", port)
 	fmt.Println("===============================")
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("error: %s\n", err.Error())
 		}
-		fmt.Println("Connection accepted")
+		fmt.Println("Connection accepted from ", conn.RemoteAddr())
 		go func (c net.Conn) {
 			linesChan := getLinesChannel(c)
 
@@ -36,7 +36,7 @@ func main() {
 				fmt.Println(line)
 			}
 
-			fmt.Println("channel closed")
+			fmt.Println("Connection to ", conn.RemoteAddr(), "channel closed")
 			c.Close()
 		}(conn)
 	}
