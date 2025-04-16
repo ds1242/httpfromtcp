@@ -29,20 +29,37 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 
 	return &Request{
 		RequestLine: line,
-		},
-	}, nil
+		}, nil
 }
 
-func parseRequestLine(b []byte) (string, error) {
+func parseRequestLine(b []byte) (RequestLine, error) {
 	fullRequest := strings.Split(string(b), "\r\n")
-
-	requestLine := strings.Split(fullRequest[0], " ")
-
-	requestlineStruct := RequestLine{
-		HttpVersion:   str[0],
-		RequestTarget: str[1],
-		Method:        str[2],
+	if len(fullRequest) == 0 {
+		return RequestLine{}, fmt.Errorf("empty request")
 	}
 
-	return requestline, nil
+	requestLineParts := strings.Split(fullRequest[0], " ")
+	if len(requestLineParts) != 3 {
+		return RequestLine{}, fmt.Errorf("malformed request")
+	}
+
+	method := requestLineParts[0]
+	if method != "GET" || method != "POST" {
+		return RequestLine{}, fmt.Errorf("incorrect method")
+	}
+	target := requestLineParts[1]
+	httpVersion := requestLineParts[3]
+	if httpVersion != "HTTP/1.1" {
+		return RequestLine{}, fmt.Errorf("incorrect http version")
+	}
+	
+
+
+	requestlineStruct := RequestLine{
+		HttpVersion:   httpVersion,
+		RequestTarget: target,
+		Method:        method,
+	}
+
+	return requestlineStruct, nil
 }
