@@ -44,7 +44,7 @@ func parseRequestLine(b []byte) (RequestLine, error) {
 	}
 
 	method := requestLineParts[0]
-	if method != "GET" || method != "POST" {
+	if method != "GET" && method != "POST" {
 		return RequestLine{}, fmt.Errorf("incorrect method")
 	}
 	target := requestLineParts[1]
@@ -52,8 +52,6 @@ func parseRequestLine(b []byte) (RequestLine, error) {
 	if httpVersion != "HTTP/1.1" {
 		return RequestLine{}, fmt.Errorf("incorrect http version")
 	}
-	
-
 
 	requestlineStruct := RequestLine{
 		HttpVersion:   httpVersion,
