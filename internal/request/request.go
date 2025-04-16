@@ -29,7 +29,7 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 
 	return &Request{
 		RequestLine: line,
-		}, nil
+	}, nil
 }
 
 func parseRequestLine(b []byte) (RequestLine, error) {
@@ -44,12 +44,20 @@ func parseRequestLine(b []byte) (RequestLine, error) {
 	}
 
 	method := requestLineParts[0]
-	if method != "GET" && method != "POST" {
-		return RequestLine{}, fmt.Errorf("incorrect method")
+	for _, char := range method {
+		if char < 'A' || char > 'Z' {
+			return RequestLine{}, fmt.Errorf("method must contain only uppercase letters")
+		}
 	}
 	target := requestLineParts[1]
-	httpVersion := requestLineParts[3]
-	if httpVersion != "HTTP/1.1" {
+
+	httpVersionFull := requestLineParts[2] // This would be something like "HTTP/1.1"
+	httpVersionParts := strings.Split(httpVersionFull, "/")
+	if len(httpVersionParts) != 2 || httpVersionParts[0] != "HTTP" {
+		return RequestLine{}, fmt.Errorf("incorrect http version format")
+	}
+	httpVersion := httpVersionParts[1] // This gives you just "1.1"
+	if httpVersion != "1.1" {
 		return RequestLine{}, fmt.Errorf("incorrect http version")
 	}
 
