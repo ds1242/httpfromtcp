@@ -1,13 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	// "os"
-	"strings"
+
+	"github.com/ds1242/httpfromtcp.git/internal/request"
 )
 
 const port = ":42069"
@@ -30,12 +29,15 @@ func main() {
 		}
 		fmt.Println("Connection accepted from ", conn.RemoteAddr())
 		go func (c net.Conn) {
-			linesChan := getLinesChannel(c)
-
-			for line := range linesChan {
-				fmt.Println(line)
+			linesChan, err := request.RequestFromReader(c)
+			if err != nil {
+				fmt.Println("Error reading lines : ", err.Error())
 			}
 
+			fmt.Println("Request line:")
+			fmt.Printf("- Method: %s\n", linesChan.RequestLine.Method)
+			fmt.Printf("- Target: %s\n", linesChan.RequestLine.RequestTarget)
+			fmt.Printf("- Version: %s\n", linesChan.RequestLine.HttpVersion)
 			fmt.Println("Connection to ", conn.RemoteAddr(), "channel closed")
 			c.Close()
 		}(conn)
@@ -43,39 +45,4 @@ func main() {
 }
 
 
-func getLinesChannel(f io.ReadCloser) <-chan string {
-	ch := make(chan string)
 
-	go func() {
-		defer f.Close()
-		defer close(ch)
-	
-		currentLine := ""
-		for {
-
-			buffer := make([]byte, 8)
-			n, err := f.Read(buffer)
-			if err != nil {
-				if currentLine != "" {
-					ch <- currentLine
-					currentLine = ""
-				}
-				if errors.Is(err, io.EOF) {
-					break
-				}
-				fmt.Printf("error: %s\n", err.Error())
-				break
-			}
-
-			str := string(buffer[:n])
-			parts := strings.Split(str, "\n")
-			for i := 0; i < len(parts)-1; i++ {
-				ch <- currentLine + parts[i]
-				currentLine = ""
-			}
-			currentLine += parts[len(parts)-1]
-		}
-	
-	}()
-	return ch
-}
